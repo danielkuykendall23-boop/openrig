@@ -312,6 +312,14 @@ export class RigRepository {
     ).run(provenance.origin, provenance.resolvedTarget, provenance.declaringDir, provenance.launchPosture, nodeId);
   }
 
+  /** Re-point an EXISTING seat's own permission_policy REF (`rig policy apply --seat`). Restore and
+   *  every later launch read the stored node, never the spec, so the raw ref (export truth) is written
+   *  here and its resolved provenance through setNodePolicyProvenance, in the caller's transaction. */
+  setNodePermissionPolicy(nodeId: string, permissionPolicy: string): void {
+    if (!this.hasNodeColumn("permission_policy")) return;
+    this.db.prepare("UPDATE nodes SET permission_policy = ? WHERE id = ?").run(permissionPolicy, nodeId);
+  }
+
   /** Seam B (R2) — read a node's persisted policy provenance; null when none attached
    *  (or pre-057 DB). Restore consumers re-derive posture from this without the spec. */
   getNodePolicyProvenance(nodeId: string): {

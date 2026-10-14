@@ -636,11 +636,11 @@ Root: `rig`; declared option: `-V, --version`.
 | `rig policy permissions list` | — | `--spec <path>`<br>`--json` |
 | `rig policy permissions show <nameOrRef>` | — | `--spec <path>`<br>`--json` |
 | `rig policy permissions current` | — | `--spec <path>` **required**<br>`--json` |
-| `rig policy permissions apply <name>` | — | `--spec <path>` **required**<br>`--json` |
+| `rig policy permissions apply <name>` | — | `--spec <path>`<br>`--seat <seat>`<br>`--reason <text>`<br>`--operator <address>`<br>`--json` |
 | `rig policy list` | — | `--spec <path>`<br>`--json` |
 | `rig policy show <nameOrRef>` | — | `--spec <path>`<br>`--json` |
 | `rig policy current` | — | `--spec <path>` **required**<br>`--json` |
-| `rig policy apply <name>` | — | `--spec <path>` **required**<br>`--json` |
+| `rig policy apply <name>` | — | `--spec <path>`<br>`--seat <seat>`<br>`--reason <text>`<br>`--operator <address>`<br>`--json` |
 
 ### whoami
 

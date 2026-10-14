@@ -923,7 +923,11 @@ and managed restrictions still matter; this flag is not a promise about sandbox
 or account access. See [Claude permissions](https://code.claude.com/docs/en/permissions).
 
 **Already running:** changing a file or running `rig policy apply` does not revoke
-a live agent's permissions, nor rewrite a stored rig's policy on restore. Pause
+a live agent's permissions, and a spec edit does not rewrite a stored rig's policy
+on restore: restore and relaunch read each seat's stored policy. To change that
+for an existing seat, run `rig policy apply <name> --seat <seat> --reason <text>`,
+adding `--operator <address>` outside a managed seat; its next launch, resume or
+restore uses it, and the running process is unchanged. Pause
 work and use the native permission controls for that conversation (current
 Codex and Claude CLIs expose `/permissions`); inspect the effective mode again.
 Keep the launch spec/profile consistent for subsequent launches. If the native
