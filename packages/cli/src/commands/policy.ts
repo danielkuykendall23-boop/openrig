@@ -16,8 +16,8 @@
 //                                           through the AUTHORITATIVE validator/resolver
 //   rig policy apply <name> --spec <path> — record the choice (same flow as `rig setup --policy`,
 //                                           which STAYS as the setup-flow composition, not an alias)
-//   rig policy apply <name> --seat <seat> — record the choice on an EXISTING seat for its next
-//                                           launch (restore and relaunch read the seat, not the spec)
+//   rig policy apply <name> --seat <seat> — store the choice on an EXISTING seat (restore, resume and
+//                                           launches that read the seat's stored state use it)
 //
 // AUTHORITATIVE SEMANTICS, NOT A PRIVATE CLASSIFIER (r2 HIGH-2): every ref this verb reports runs
 // through validatePermissionPolicyRef + resolvePermissionPolicyAttachment — byte-equivalent CLI
@@ -172,7 +172,7 @@ async function applyToSeat(
     const unchanged = res.data["changed"] === false ? " (unchanged)" : "";
     const posture = `launch_posture=${String(res.data["launchPosture"])}`;
     console.log(name === "none"
-      ? `Recorded a deliberate no-policy choice (permission_policy: none) on seat ${opts.seat} (${posture})${unchanged}.`
+      ? `Recorded permission_policy: none on seat ${opts.seat}: an explicit floor for this seat, not "no policy"; it does not inherit the rig's policy (${posture})${unchanged}.`
       : `Recorded permission_policy: ${ref} on seat ${opts.seat} (${posture})${unchanged}.`);
     console.log(String(res.data["effect"]));
   }
@@ -358,9 +358,9 @@ function registerPermissionCommands(cmd: Command, getDeps: () => StatusDeps): vo
 
   cmd
     .command("apply <name>")
-    .description(`Record a policy choice into an EXISTING rig spec (the same recording flow as \`rig setup --policy\`, which stays as the setup-step composition), or with --seat onto an existing seat for its next launch, resume or restore. ${HONESTY_PIN}`)
+    .description(`Record a policy choice into an EXISTING rig spec (the same recording flow as \`rig setup --policy\`, which stays as the setup-step composition), or with --seat store it on an existing seat. Restore, resume and launches that read the seat's stored state use the stored policy, unless an explicit native selection (rig seat set-permissions) takes precedence; \`rig up <rig name>\` uses it, while a launch from a spec that declares a policy replaces it with the spec's policy, which later restores then use. ${HONESTY_PIN}`)
     .option("--spec <path>", "Rig spec file, or a directory containing rig.yaml/agent.yaml")
-    .option("--seat <seat>", "An existing seat (canonical session name or logical seat ref); the running process is unchanged")
+    .option("--seat <seat>", "An existing seat (canonical session name or logical seat ref). `none` is an explicit floor for that seat and does not inherit the rig's policy. The running process and the spec file are unchanged. Afterwards a `rig launch --retry-startup-from` file has to carry the new policy")
     .option("--reason <text>", "With --seat: the audit reason (required)")
     .option("--operator <address>", "With --seat: operator recorded on the audit event when no session identity is present")
     .option("--json", "Machine-readable output")

@@ -525,10 +525,11 @@ export class SeatLifecycleService {
     }
   }
 
-  /** `rig policy apply <name> --seat`: re-point an existing seat's own permission_policy. Restore,
-   *  resume and lifecycle launches read the seat's stored attachment (never the spec file), so this
-   *  writes the raw ref and the provenance the instantiator would persist for the same member ref.
-   *  The ref is validated exactly as a spec member's is; the running process is untouched. */
+  /** `rig policy apply <name> --seat`: re-point an existing seat's own permission_policy. This writes
+   *  the raw ref and the provenance the instantiator would persist for the same member ref; restore,
+   *  resume and launches that read the seat's stored state use that provenance, while a launch from a
+   *  spec that declares a policy re-applies the spec's. The ref is validated exactly as a spec
+   *  member's is; the running process is untouched. */
   async setPolicy(input: { seatRef: string; ref: string; reason: string; actor: string }): Promise<SetPolicyResult> {
     const required = this.requireReason(input.reason);
     if (required) return required;
@@ -577,8 +578,10 @@ export class SeatLifecycleService {
     let selection = false;
     // An unreadable selection refuses the launch by itself (NativePermissionStore.read); nothing to add here.
     try { selection = new NativePermissionStore(this.db).read(seat.nodeId) !== null; } catch { /* see above */ }
-    const effect = "Future launches only: the seat's next launch, resume or restore uses this policy. The running process is unchanged; nothing was restarted. The rig spec file is unchanged."
-      + (selection ? " This seat also has an explicit native permission selection (rig seat set-permissions), which still takes precedence at launch." : "");
+    const effect = "Restore, resume and launches that read this seat's stored state use this policy, unless an explicit native selection (rig seat set-permissions) takes precedence. "
+      + "`rig up <rig name>` uses it; a launch from a spec that declares a policy replaces it with the spec's policy, which later restores then use. "
+      + "The running process and the rig spec file are unchanged; nothing was restarted."
+      + (selection ? " This seat has an explicit native permission selection, so that selection takes precedence at launch." : "");
     return { ok: true, seat, from, to: ref, launchPosture: attachment.launchPosture, changed, effect };
   }
 

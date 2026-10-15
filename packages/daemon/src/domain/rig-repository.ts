@@ -312,9 +312,11 @@ export class RigRepository {
     ).run(provenance.origin, provenance.resolvedTarget, provenance.declaringDir, provenance.launchPosture, nodeId);
   }
 
-  /** Re-point an EXISTING seat's own permission_policy REF (`rig policy apply --seat`). Restore and
-   *  every later launch read the stored node, never the spec, so the raw ref (export truth) is written
-   *  here and its resolved provenance through setNodePolicyProvenance, in the caller's transaction. */
+  /** Re-point an EXISTING seat's own permission_policy REF (`rig policy apply --seat`); the caller
+   *  writes its resolved provenance through setNodePolicyProvenance in the same transaction. Restore,
+   *  resume and launches that read the stored seat use that provenance. A later launch from a spec that
+   *  declares a policy rewrites the provenance but not this ref, so the two can then differ: this ref
+   *  is what `rig export` emits, not necessarily the policy the seat launched with. */
   setNodePermissionPolicy(nodeId: string, permissionPolicy: string): void {
     if (!this.hasNodeColumn("permission_policy")) return;
     this.db.prepare("UPDATE nodes SET permission_policy = ? WHERE id = ?").run(permissionPolicy, nodeId);

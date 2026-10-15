@@ -268,7 +268,7 @@ seatRoutes.post("/set-permissions/:seatRef", async (c) => {
   return c.json(result, result.ok ? 200 : seatLifecycleStatus(result.code));
 });
 
-// `rig policy apply <name> --seat`: re-point an existing seat's permission_policy for its next launch.
+// `rig policy apply <name> --seat`: re-point an existing seat's stored permission_policy; the running process is unchanged.
 seatRoutes.post("/set-policy/:seatRef", async (c) => {
   const body = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
   const actor = transportSenderSession(c) ?? (typeof body?.operator === "string" ? body.operator.trim() : undefined);

@@ -254,25 +254,25 @@ describe("rig policy apply --seat — an existing seat's stored policy", () => {
     } finally { log.mockRestore(); err.mockRestore(); process.exitCode = saved; }
   }
 
-  it("posts the builtin ref to the seat and reports the next-launch effect", async () => {
+  it("posts the builtin ref to the seat and reports the daemon's effect", async () => {
+    const effect = "Restore, resume and launches that read this seat's stored state use this policy, unless an explicit native selection (rig seat set-permissions) takes precedence.";
     const { deps, posts } = seatDeps({ status: 200, data: {
-      ok: true, changed: true, from: null, to: "builtin:yolo", launchPosture: "full_bypass",
-      effect: "Future launches only: the seat's next launch, resume or restore uses this policy.",
+      ok: true, changed: true, from: null, to: "builtin:yolo", launchPosture: "full_bypass", effect,
     } });
     const out = await run(deps, ["policy", "apply", "yolo", "--seat", "dev-builder@spark", "--reason", "unattended", "--operator", "me@laptop"]);
     expect(posts).toEqual([["/api/seat/set-policy/dev-builder%40spark", { ref: "builtin:yolo", reason: "unattended", operator: "me@laptop" }]]);
     expect(out.logs).toEqual([
       "Recorded permission_policy: builtin:yolo on seat dev-builder@spark (launch_posture=full_bypass).",
-      "Future launches only: the seat's next launch, resume or restore uses this policy.",
+      effect,
     ]);
     expect(out.exitCode).toBeUndefined();
   });
 
-  it("records none as the deliberate choice through the nested verb too", async () => {
+  it("reports none as an explicit floor for the seat, not inherited, through the nested verb too", async () => {
     const { deps, posts } = seatDeps({ status: 200, data: { ok: true, changed: false, to: "none", launchPosture: "floor", effect: "e" } });
     const out = await run(deps, ["policy", "permissions", "apply", "none", "--seat", "dev-builder@spark", "--reason", "r"]);
     expect(posts[0]![1]).toEqual({ ref: "none", reason: "r" });
-    expect(out.logs[0]).toBe("Recorded a deliberate no-policy choice (permission_policy: none) on seat dev-builder@spark (launch_posture=floor) (unchanged).");
+    expect(out.logs[0]).toBe("Recorded permission_policy: none on seat dev-builder@spark: an explicit floor for this seat, not \"no policy\"; it does not inherit the rig's policy (launch_posture=floor) (unchanged).");
   });
 
   it("passes a daemon refusal through with its exit code", async () => {
